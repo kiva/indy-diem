@@ -13,3 +13,4 @@ pytest-cov
 mypy-protobuf
 pdoc3
 pygount
+datetime

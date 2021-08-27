@@ -1,24 +1,11 @@
-"""
- This code demonstrates basic flow for working with the LibraClient.
- 1. Connect to testnet
- 2. Generate keys
- 3. Create account - by minting
- 4. Get account information
- 5. Start events listener
- 6. Add money to existing account (mint)
- 7. Generate keys for second account
- 8. Create second account (for the benefit of the following transaction)
- 9. Generate IntentIdentifier
- 10. Deserialize IntentIdentifier
- 11. Transfer money between accounts (peer to peer transaction)
-"""
-
 import time
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import AuthKey, testnet, identifier, utils, diem_types, stdlib
 
 import get_events_example
+
+from datetime import datetime
 
 CURRENCY = "XUS"
 
@@ -75,6 +62,50 @@ def main():
 
 
     METADATA = str.encode("{did:mydid101}")
+
+    INDY_VERSION = 1
+    INDY_TXN = "NYM"
+    PROTOCOL_VERSION = 1
+    PHOTO = "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAFCAYAAABxeg0vAAAAAXNSR0IArs4c6QAAAIRlWElmTU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAAAygAwAEAAAAAQAAAAUAAAAA7Sb1LwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAVlpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDYuMC4wIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iPgogICAgICAgICA8dGlmZjpPcmllbnRhdGlvbj4xPC90aWZmOk9yaWVudGF0aW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KGV7hBwAAAM9JREFUCB11jj1KQ3EQxGf2/8CQNFpKwCpYxkof1j5SeYQUCSR4iDRCvIGdpSSdvRZ2T6zs0gaxsFFIIB+QJtlxcwCn2pkfu7PojYpB97GVI9QfXZ2Hv9vP/4m9cfERcOi++0pZunDHSUosUau8+WLTZKZ5ZJcUq05MMghTxXGzNIvwnVDdd7rRcnNKYw7HEaQVwF8TOgbikNRZBN+Sr2O5HuA2Wu4B/wn/uWcwL0U/sGgoJeuQyBw8jvdeHtqvE9/6k2jPXqsODGhAdk1w/AchelJz2P+enAAAAABJRU5ErkJggg=="
+
+    REQ_ID = 1
+
+    INDY_TXN = {
+    "ver": INDY_VERSION,
+    "txn": {
+        "type": INDY_VERSION,
+        "protocolVersion": PROTOCOL_VERSION,
+
+        "data": {
+            "photo~attach": PHOTO,
+        },
+
+        "metadata": {
+            "reqId": 1,
+            "from": utils.account_address_hex(intent_identifier.account_address,
+            "endorser": None,
+            "digest": None,
+            "payloadDigest": None,
+            "taaAcceptance": {
+                "taaDigest": None,
+                "mechanism": None,
+                "time": None
+             }
+        },
+    },
+    "txnMetadata": {
+        "txnTime": <...>,
+        "seqNo": <...>,
+        "txnId": <...>
+    },
+    "reqSignature": {
+        "type": <...>,
+        "values": [{
+            "from": <...>,
+            "value": <...>
+        }]
+    }
+}
     SIGNED_METADATA=sender_private_key.sign(METADATA)
 
     print("#11 Peer 2 peer transaction")
@@ -82,7 +113,7 @@ def main():
     script = stdlib.encode_peer_to_peer_with_metadata_script(
         currency=utils.currency_code(intent_identifier.currency_code),
         payee=intent_identifier.account_address,
-        amount=intent_identifier.amount,
+        amount=1333333,
         metadata=METADATA,  # no requirement for metadata and metadata signature
         metadata_signature=SIGNED_METADATA,
     )
