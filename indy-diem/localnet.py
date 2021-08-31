@@ -28,8 +28,8 @@ from . import diem_types, jsonrpc, utils, chain_ids, bcs, identifier, stdlib
 from .testing import LocalAccount, DD_ADDRESS
 
 
-JSON_RPC_URL: str = "https://testnet.diem.com/v1"
-FAUCET_URL: str = "https://testnet.diem.com/mint"
+JSON_RPC_URL: str = "http://127.0.0.1:8000/v1"
+FAUCET_URL: str = "http://127.0.0.1:8080/mint"
 CHAIN_ID: diem_types.ChainId = chain_ids.TESTNET
 
 DESIGNATED_DEALER_ADDRESS: diem_types.AccountAddress = utils.account_address(DD_ADDRESS)
