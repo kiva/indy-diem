@@ -7,13 +7,14 @@ import get_events_example
 import json 
 
 from datetime import datetime
+import localnet 
 
 CURRENCY = "XUS"
 
 
 def main():
     print("#1 connect to testnet")
-    client = testnet.create_client();
+    client = localnet.create_client();
 
     print("#2 Generate Keys")
     # generate private key for sender account
@@ -23,8 +24,8 @@ def main():
     print(f"Generated sender address: {utils.account_address_hex(sender_auth_key.account_address())}")
 
     print("#3 Create account")
-    faucet = testnet.Faucet(client)
-    testnet.Faucet.mint(faucet, sender_auth_key.hex(), 100000000, CURRENCY)
+    faucet = localnet.Faucet(client)
+    localnet.Faucet.mint(faucet, sender_auth_key.hex(), 100000000, CURRENCY)
 
     print("#4 Get account information")
     sender_account = client.get_account(sender_auth_key.account_address())
@@ -34,8 +35,8 @@ def main():
     get_events_example.subscribe(client, events_key)
 
     print("#6 Add money to account")
-    faucet = testnet.Faucet(client)
-    testnet.Faucet.mint(faucet, sender_auth_key.hex(), 10000000, CURRENCY)
+    faucet = localnet.Faucet(client)
+    localnet.Faucet.mint(faucet, sender_auth_key.hex(), 10000000, CURRENCY)
 
     print("#7 Generate Keys")
     # generate private key for receiver account
@@ -123,8 +124,7 @@ def main():
         currency=utils.currency_code(intent_identifier.currency_code),
         payee=intent_identifier.account_address,
         amount=1333333,
-        metadata=METADATA
-        ,  # no requirement for metadata and metadata signature
+        metadata=METADATA,  # no requirement for metadata and metadata signature
         metadata_signature=b'',
     )
     # create transaction
