@@ -3,7 +3,7 @@ import time
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import AuthKey, testnet, identifier, utils, diem_types, stdlib
 
-import get_events_example
+import get_events_example_local
 import json 
 
 from datetime import datetime
@@ -32,7 +32,7 @@ def main():
 
     events_key = sender_account.received_events_key
     print("#5 Start event listener")
-    get_events_example.subscribe(client, events_key)
+    get_events_example_local.subscribe(client, events_key)
 
     print("#6 Add money to account")
     faucet = localnet.Faucet(client)
@@ -46,8 +46,8 @@ def main():
     print(f"Generated receiver address: {utils.account_address_hex(receiver_auth_key.account_address())}")
 
     print("#8 Create second account")
-    faucet = testnet.Faucet(client)
-    testnet.Faucet.mint(faucet, receiver_auth_key.hex(), 1000000, CURRENCY)
+    faucet = localnet.Faucet(client)
+    localnet.Faucet.mint(faucet, receiver_auth_key.hex(), 1000000, CURRENCY)
 
     print("#9 Generate IntentIdentifier")
     account_identifier = identifier.encode_account(
@@ -136,7 +136,7 @@ def main():
         gas_unit_price=0,
         gas_currency_code=CURRENCY,
         expiration_timestamp_secs=int(time.time()) + 30,
-        chain_id=testnet.CHAIN_ID,
+        chain_id=localnet.CHAIN_ID,
     )
     # sign transaction
     signature = sender_private_key.sign(utils.raw_transaction_signing_msg(raw_transaction))

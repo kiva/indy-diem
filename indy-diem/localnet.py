@@ -24,15 +24,15 @@ account: LocalAccount = faucet.gen_account()
 import requests
 import typing
 
-from . import diem_types, jsonrpc, utils, chain_ids, bcs, identifier, stdlib
-from .testing import LocalAccount, DD_ADDRESS
+from diem import diem_types, jsonrpc, utils, chain_ids, bcs, identifier, stdlib
+from diem import testing
 
 
-JSON_RPC_URL: str = "http://127.0.0.1:8000/v1"
-FAUCET_URL: str = "http://127.0.0.1:8080/mint"
+JSON_RPC_URL: str = "http://127.0.0.1:8080/v1"
+FAUCET_URL: str = "http://127.0.0.1:8000/mint"
 CHAIN_ID: diem_types.ChainId = chain_ids.TESTING
 
-DESIGNATED_DEALER_ADDRESS: diem_types.AccountAddress = utils.account_address(DD_ADDRESS)
+DESIGNATED_DEALER_ADDRESS: diem_types.AccountAddress = utils.account_address(testing.DD_ADDRESS)
 TEST_CURRENCY_CODE: str = "XUS"
 HRP: str = identifier.TDM
 
@@ -43,13 +43,13 @@ def create_client() -> jsonrpc.Client:
     return jsonrpc.Client(JSON_RPC_URL)
 
 
-def gen_vasp_account(client: jsonrpc.Client, base_url: str) -> LocalAccount:
+def gen_vasp_account(client: jsonrpc.Client, base_url: str) -> testing.LocalAccount:
     raise Exception("deprecated: use `gen_account` instead")
 
 
 def gen_account(
     client: jsonrpc.Client, dd_account: bool = False, base_url: typing.Optional[str] = None
-) -> LocalAccount:
+) -> testing.LocalAccount:
     """generates a Testnet onchain account"""
 
     account = Faucet(client).gen_account(dd_account=dd_account)
@@ -63,17 +63,17 @@ def gen_account(
 
 def gen_child_vasp(
     client: jsonrpc.Client,
-    parent_vasp: LocalAccount,
+    parent_vasp: testing.LocalAccount,
     initial_balance: int = 10_000_000_000,
     currency: str = TEST_CURRENCY_CODE,
-) -> LocalAccount:
+) -> testing.LocalAccount:
     child, payload = parent_vasp.new_child_vasp(initial_balance, currency)
     apply_txn(client, parent_vasp, payload)
     return child
 
 
 def apply_txn(
-    client: jsonrpc.Client, vasp: LocalAccount, payload: diem_types.TransactionPayload
+    client: jsonrpc.Client, vasp: testing.LocalAccount, payload: diem_types.TransactionPayload
 ) -> jsonrpc.Transaction:
     seq = client.get_account_sequence(vasp.account_address)
     txn = vasp.create_signed_txn(seq, payload)
@@ -98,8 +98,8 @@ class Faucet:
         self._retry: jsonrpc.Retry = retry or jsonrpc.Retry(5, 0.2, Exception)
         self._session: requests.Session = requests.Session()
 
-    def gen_account(self, currency_code: str = TEST_CURRENCY_CODE, dd_account: bool = False) -> LocalAccount:
-        account = LocalAccount.generate()
+    def gen_account(self, currency_code: str = TEST_CURRENCY_CODE, dd_account: bool = False) -> testing.LocalAccount:
+        account = testing.LocalAccount.generate()
         self.mint(account.auth_key.hex(), 100_000_000_000, currency_code, dd_account)
         return account
 
