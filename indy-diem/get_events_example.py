@@ -6,7 +6,6 @@ from threading import Thread
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import testnet, AuthKey, utils
 
-import 
 
 CURRENCY = "XUS"
 
