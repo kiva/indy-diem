@@ -20,6 +20,6 @@ setup(
     author='Kiva',
     author_email='camilop@kiva.org',
     packages=['indy-diem'],
-    install_requires=['diem, pytest'],
+    install_requires=['diem', 'pytest'],
     tests_require=['pytest']
 )
