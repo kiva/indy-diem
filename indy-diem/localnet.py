@@ -28,13 +28,12 @@ from diem import diem_types, jsonrpc, utils, chain_ids, bcs, identifier, stdlib
 from diem import testing
 
 
-JSON_RPC_URL: str = "http://127.0.0.1:8080/v1"
-FAUCET_URL: str = "http://127.0.0.1:8000/mint"
+JSON_RPC_URL: str = "http://localhost:8080/v1"
+FAUCET_URL: str = "http://localhost:8000/mint"
 CHAIN_ID: diem_types.ChainId = chain_ids.TESTING
 
-DESIGNATED_DEALER_ADDRESS: diem_types.AccountAddress = utils.account_address(testing.DD_ADDRESS)
 TEST_CURRENCY_CODE: str = "XUS"
-HRP: str = identifier.TDM
+
 
 
 def create_client() -> jsonrpc.Client:
