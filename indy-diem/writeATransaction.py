@@ -8,6 +8,8 @@ import json
 
 from datetime import datetime
 
+
+
 CURRENCY = "XUS"
 
 
