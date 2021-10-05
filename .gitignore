@@ -141,3 +141,4 @@ cython_debug/
 # diem that is pulled with start up script
 
 diem/
+.idea/
