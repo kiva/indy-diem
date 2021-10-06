@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import AuthKey, testnet, identifier, utils, diem_types, stdlib
 
 import get_events_example
-import create_schema
+from create_schema import create_schema_name, create_did
 import json 
 
 from datetime import datetime
@@ -65,7 +65,7 @@ def main():
 
 
 
-
+    indy_id =
 
     print("#11 Peer 2 peer transaction")
     # create script
