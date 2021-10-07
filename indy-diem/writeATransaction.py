@@ -4,8 +4,8 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import AuthKey, testnet, identifier, utils, diem_types, stdlib
 
 import get_events_example
-from create_schema import create_schema_name, create_did
-import json 
+from create_schema import create_schema_name, create_schema, create_local_did
+import json
 
 from datetime import datetime
 
@@ -62,10 +62,16 @@ def main():
     print(f"Amount from intent: {intent_identifier.amount}")
     print(f"Currency from intent: {intent_identifier.currency_code}")
 
+    indy_did = create_local_did()
+    schema_id = create_schema_name(indy_did, "kivatesting", "1.0")
+    schema = create_schema(schema_id,
+                           ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"],
+                           "Degree",
+                           "1.0",
+                           indy_did
+                           )
 
-
-
-    indy_id =
+    METADATA = str.encode(schema)
 
     print("#11 Peer 2 peer transaction")
     # create script
@@ -77,12 +83,13 @@ def main():
         ,  # no requirement for metadata and metadata signature
         metadata_signature=b'',
     )
-    # create transaction
+    # create transactionn
+  
     raw_transaction = diem_types.RawTransaction(
         sender=sender_auth_key.account_address(),
         sequence_number=sender_account.sequence_number,
         payload=diem_types.TransactionPayload__Script(script),
-        max_gas_amount=1_000_000,
+        max_gas_amount=1_000_512,
         gas_unit_price=0,
         gas_currency_code=CURRENCY,
         expiration_timestamp_secs=int(time.time()) + 30,

@@ -2,7 +2,7 @@
 
 import json
 import requests
-import random
+
 
 LOCAL_URL = "http://0.0.0.0:8124/wallet/did/create"
 LOCAL_HEADERS = {'accept': 'application/json', 'Content-Type': 'application/json'}
@@ -34,7 +34,7 @@ def create_schema(id: str, attr_names: list, name: str, version: str, submitter_
         "reqMetadata": req_metadata
     }
 
-    print(schema)
+    print("CREATING SCHEMA:\n" + str(schema) + "\n")
     return json.dumps(schema)
 
 
@@ -46,17 +46,16 @@ def create_did(endpoint, data, headers):
 def create_local_did():
     res = create_did(LOCAL_URL, LOCAL_DID_DATA, LOCAL_HEADERS)
     res_data = res.json()
-    print(res_data)
-    return res_data["result"]["did"]
+    did = res_data["result"]["did"]
+    print("\nYOUR DID: " + did + "\n")
+    return did
 
 
 def create_schema_name(did: str, schema_name: str, version: str):
     return did + ":" + schema_name + ":" + version
 
-
+# for testing
 def create_local_schema_name():
     did = create_local_did()
     print(did)
     return create_schema_name(did , LOCAL_SCHEMA_NAME, "1.0")
-
-print(create_local_schema_name())
