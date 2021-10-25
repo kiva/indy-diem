@@ -16,8 +16,6 @@ def get_schema(sender_account: str, sender_seq_number: int, endpoint: str):
     res = requests.post(endpoint, data=payload, headers=post_headers)
     res_string = json.loads(res.content.decode("utf-8"))
 
-    print(res_string)
-
     res_metadata = res_string["result"]["events"][0]["data"]["metadata"]
 
     return codecs.decode(codecs.decode(res_metadata, 'hex'), 'UTF-8')

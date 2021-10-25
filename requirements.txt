@@ -13,6 +13,8 @@ pytest-cov
 mypy-protobuf
 pdoc3
 pygount
-datetime
+datetime~=4.3
 aries-cloudagent==0.7.1
 python3-indy==1.14.1
+setuptools~=58.2.0
+diem~=1.7.1

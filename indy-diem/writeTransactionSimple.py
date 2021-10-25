@@ -1,15 +1,17 @@
-import time
-import json
-import logging
 import asyncio
-import os
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from diem import AuthKey, testnet, identifier, utils, diem_types, stdlib
+import json
+import sys
+import time
+import zlib
 
-from create_schema import create_schema_name, create_local_did
-from get_schema import get_schema
+from random import randrange
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from diem import AuthKey, testnet, utils, diem_types, stdlib
 from indy import anoncreds, wallet
 from indy import pool
+from get_schema import get_schema
+from base64 import b64encode, b64decode
+
 
 PROTOCOL_VERSION = 2
 CURRENCY = "XUS"
@@ -44,7 +46,7 @@ async def create_schema():
     schema = {
         'name': 'gvt',
         'version': '1.0',
-        'attributes': '["age", "sex", "height", "name"]'
+        'attributes': '["age", "sex"]'
     }
 
     issuer['schema_id'], issuer['schema'] = await anoncreds.issuer_create_schema(issuer['did'], schema['name'],
@@ -133,73 +135,58 @@ client.submit(signed_txn)
 # wait for transaction
 client.wait_for_transaction(signed_txn)
 print("Retrieving schema from Diem ledger:\n")
-# print(get_schema(utils.account_address_hex(sender_auth_key.account_address()), sender_account.sequence_number,
-#                  "https://testnet.diem.com/v1"))
+print(get_schema(utils.account_address_hex(sender_auth_key.account_address()), sender_account.sequence_number,
+                 "https://testnet.diem.com/v1"))
 
+cred_def = json.dumps(schema_and_cred_def[1])
+cred_def = json.loads(cred_def)
+cred_def_encoded = cred_def.encode('utf-8')
+cred_def_compressed = zlib.compress(cred_def_encoded)
+cred_def_b64 = b64encode(cred_def_compressed)
+cred_def_ascii = cred_def_b64.decode('ascii')
+cred_def_dict = {'b64': cred_def_ascii}
 
-cred_def_file = open("cred_def.json", "x")
-parsed_cred_def = json.loads(schema_and_cred_def[1])
-cred_def_file.write(json.dumps(parsed_cred_def, indent=2))
-cred_def_file.close()
+METADATA_CRED_DEF = str.encode(str(cred_def_dict))
 
-with open(os.path.join('./', 'cred_def.json'), 'r',
-          encoding='utf-8') as f1:
-    s = f1.read()
-    s = s.replace('\t', '')
-    s = s.replace('\n', '')
-    s = s.replace(',}', '}')
-    s = s.replace(',]', ']')
+# create script
+script = stdlib.encode_peer_to_peer_with_metadata_script(
+    currency=utils.currency_code(CURRENCY),
+    payee=receiver_auth_key.account_address(),
+    amount=10000000,
+    metadata=METADATA_CRED_DEF,  # no requirement for metadata and metadata signature
+    metadata_signature=b'',
+)
 
-    print(s)
-    data = json.loads(s)
+rand_number = randrange(5)
+# create transaction
+raw_transaction = diem_types.RawTransaction(
+    sender=sender_auth_key.account_address(),
+    sequence_number=sender_account.sequence_number + 1,
+    payload=diem_types.TransactionPayload__Script(script),
+    max_gas_amount=1_000_000,
+    gas_unit_price=0,
+    gas_currency_code=CURRENCY,
+    expiration_timestamp_secs=int(time.time()) + 300,
+    chain_id=testnet.CHAIN_ID,
+)
+# sign transaction
+signature = sender_private_key.sign(utils.raw_transaction_signing_msg(raw_transaction))
+public_key_bytes = utils.public_key_bytes(sender_private_key.public_key())
+signed_txn = utils.create_signed_transaction(raw_transaction, public_key_bytes, signature)
+# submit transaction
+client.submit(signed_txn)
+# wait for transaction
+client.wait_for_transaction(signed_txn)
 
-    ll = [json.loads(line.strip()) for line in data.readlines()]
+print("Retrieving schema from Diem ledger:\n")
+cred_def_res = get_schema(utils.account_address_hex(sender_auth_key.account_address()), sender_account.sequence_number+1,
+                 "https://testnet.diem.com/v1")
 
-    print(len(ll))
+cred_def_res = cred_def_res.replace('\t','')
+cred_def_res = cred_def_res.replace('\n','')
+cred_def_res = cred_def_res.replace(',}','}')
+cred_def_res = cred_def_res.replace(',]',']')
 
-    size_of_the_split=2000
-    total = len(ll) // size_of_the_split
+filtered_cred_def = eval(cred_def_res)
 
-    print(total+1)
-
-    for i in range(total+1):
-        json.dump(ll[i * size_of_the_split:(i + 1) * size_of_the_split], open(
-            "./cred_def.json" + str(i+1) + ".json", 'w',
-            encoding='utf8'), ensure_ascii=False, indent=True)
-
-# METADATA_CRED_DEF = str.encode(schema_and_cred_def[1])
-#
-# # create script
-# script = stdlib.encode_peer_to_peer_with_metadata_script(
-#     currency=utils.currency_code(CURRENCY),
-#     payee=receiver_auth_key.account_address(),
-#     amount=10000000,
-#     metadata=METADATA_CRED_DEF,  # no requirement for metadata and metadata signature
-#     metadata_signature=b'',
-# )
-#
-# # create transaction
-# raw_transaction = diem_types.RawTransaction(
-#     sender=sender_auth_key.account_address(),
-#     sequence_number=sender_account.sequence_number,
-#     payload=diem_types.TransactionPayload__Script(script),
-#     max_gas_amount=1_000_000,
-#     gas_unit_price=0,
-#     gas_currency_code=CURRENCY,
-#     expiration_timestamp_secs=int(time.time()) + 30,
-#     chain_id=testnet.CHAIN_ID,
-# )
-#
-# # sign transaction
-# signature = sender_private_key.sign(utils.raw_transaction_signing_msg(raw_transaction))
-# public_key_bytes = utils.public_key_bytes(sender_private_key.public_key())
-# signed_txn = utils.create_signed_transaction(raw_transaction, public_key_bytes, signature)
-#
-# # submit transaction
-# client.submit(signed_txn)
-#
-# # wait for transaction
-# client.wait_for_transaction(signed_txn)
-# print("Retrieving schema from Diem ledger:\n")
-# print(get_schema(utils.account_address_hex(sender_auth_key.account_address()), sender_account.sequence_number,
-#                  "https://testnet.diem.com/v1"))
+print(json.loads(zlib.decompress(b64decode(filtered_cred_def['b64']))))
