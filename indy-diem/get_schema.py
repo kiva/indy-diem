@@ -1,7 +1,7 @@
 import json
 import requests
 import codecs
-
+from hashlib import sha256
 
 def get_schema(sender_account: str, sender_seq_number: int, endpoint: str):
     data = {

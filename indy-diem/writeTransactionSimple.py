@@ -9,7 +9,8 @@ from indy import pool
 from get_schema import get_schema
 from diem_txn import create_diem_script, create_diem_raw_txn, sign_and_wait_diem_txn
 from compress_decompress_cred_def import compress_cred_def, clean_up_cred_def_res, decompress_cred_def
-from async_calls import create_master_secret, create_credential_offer, create_credential_req
+from async_calls import create_master_secret, create_credential_offer, \
+    create_credential_req, create_credential, store_credential
 
 PROTOCOL_VERSION = 2
 CURRENCY = "XUS"
@@ -52,6 +53,9 @@ async def create_schema():
     issuer['schema_id'], issuer['schema'] = await anoncreds.issuer_create_schema(issuer['did'], schema['name'],
                                                                                  schema['version'],
                                                                                  schema['attributes'])
+
+    store[issuer['schema_id']] = issuer['schema']
+
     cred_def = {
         'tag': 'cred_def_tag',
         'type': 'CL',
@@ -110,8 +114,8 @@ raw_transaction = create_diem_raw_txn(sender_auth_key, sender_account, script, C
 sign_and_wait_diem_txn(sender_private_key, raw_transaction, client)
 
 print("\nRetrieving SCHEMA from Diem ledger:\n")
-print(get_schema(utils.account_address_hex(sender_auth_key.account_address()), sender_account.sequence_number,
-                 "https://testnet.diem.com/v1"))
+schema = get_schema(utils.account_address_hex(sender_auth_key.account_address()), sender_account.sequence_number,
+                 "https://testnet.diem.com/v1")
 
 cred_def_dict = compress_cred_def(schema_and_cred_def)
 
@@ -136,6 +140,8 @@ decomp_comp = decompress_cred_def(filtered_cred_def)
 
 master_secret_id = loop.run_until_complete(create_master_secret(prover))
 
+prover['master_secret_id'] = master_secret_id
+
 print("\nmaster sectet id:" + master_secret_id)
 
 cred_offer = loop.run_until_complete(create_credential_offer(issuer['wallet'], decomp_comp['id']))
@@ -154,9 +160,25 @@ prover['cred_req'], prover['cred_req_metadata'] = loop.run_until_complete(create
 
 
 prover['cred_values'] = json.dumps({
-    "sex": {"raw": "male", "encoded": "5944657099558967239210949258394887428692050081607692519917050011144233"},
-    "name": {"raw": "Alex", "encoded": "1139481716457488690172217916278103335"},
- })
+        "sex": {"raw": "male", "encoded": "5944657099558967239210949258394887428692050081607692519917050011144233"},
+        "age": {"raw": "28", "encoded": "28"}
+})
+
 
 issuer['cred_values'] = prover['cred_values']
 issuer['cred_req'] = prover['cred_req']
+
+print("wallet:")
+print(issuer['wallet'])
+print("\ncred_offer:")
+print(issuer['cred_offer'])
+print("\ncred_req:")
+print(issuer['cred_req'])
+print("\ncred_values:")
+print(issuer['cred_values'])
+
+(cred_json, _, _) = loop.run_until_complete(create_credential(issuer))
+
+prover['cred'] = cred_json
+
+loop.run_until_complete(store_credential(prover))
