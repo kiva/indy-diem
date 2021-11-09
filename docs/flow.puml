@@ -1,0 +1,51 @@
+@startuml indy-diem
+
+Actor Faber order 50
+Actor Acme order 70
+Actor Alice order 100
+database DiemLedger order 60
+participant FaberIndyWallet order 20
+participant FaberAnonCreds order  30
+participant FaberPythonDiem order 40
+participant FaberMiniWallet order 10
+participant AcmeMiniWallet order 90
+participant AcmePythonDiem order 80
+participant AliceMiniWallet order 110
+participant AlicePythonDiem order 120
+participant AliceAnonCreds order  130
+participant AliceIndyWallet order 140
+
+Faber -> FaberIndyWallet : request to create Faber DID
+FaberIndyWallet -> FaberAnonCreds : create Faber DID using ED25519
+FaberAnonCreds -> FaberIndyWallet : store Faber DID
+Faber -> FaberAnonCreds  : create SCHEMA using Faber DID
+FaberAnonCreds -> FaberIndyWallet : store SCHEMA
+Faber -> FaberPythonDiem : request to create Diem Identifier and ED25519 keys 
+FaberPythonDiem -> FaberMiniWallet : store Diem Identifier
+Faber -> DiemLedger : publish identifier  to Ledger
+Acme ->  AcmePythonDiem : request to create Diem Identifier and ED25519 keys 
+Acme -> AcmePythonDiem:  to create Diem Identifier and ED25519 keys 
+Acme -> AcmeMiniWallet: store Diem Identifier
+Acme -> DiemLedger : publish indentifier to Ledger
+Faber -> FaberPythonDiem : create payment transaction for TrustedInstution
+FaberPythonDiem ->  DiemLedger : send payment transaction to ledger with SCHEMA
+DiemLedger-> Acme : accept payment or deny payment 
+Faber ->  DiemLedger : pull SCHEMA from Acme payments on ledger
+Faber -> FaberAnonCreds  : create CRED_DEF using Faber DID and SCHEMA pulled 
+FaberAnonCreds -> FaberIndyWallet : store CRED_DEF
+FaberPythonDiem ->  DiemLedger : send payment transaction to ledger with CRED_DEF
+DiemLedger-> Acme : accept payment or deny payment 
+
+Alice -> AliceAnonCreds : create master secret
+Faber -> FaberAnonCreds : create credential offer
+Faber -> Alice : send credential offer
+Alice -> AliceAnonCreds : create credential request
+Alice -> Faber : send credential request 
+Faber -> FaberAnonCreds : create credential with credential attributes
+Faber -> Alice :  send credential
+Alice -> AliceIndyWallet : store credential  
+
+
+
+
+@enduml
