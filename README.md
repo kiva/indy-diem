@@ -5,6 +5,14 @@
 # Indy-Diem
 ## Indy transaction layer for Diem ledger
 
+WARNING THIS IS NOT PRODUCTION CODE
+
+This code is here to prove that anyone can use indy crypto or ursa to store credentials into a storage like Diem. It also is meant to show that Diem could benefit and could quickly integrate crypto to allow for verifiable credentials on their network.
+
+This code isn't complete it stops at the point where a credential is issued but not verified. That is possible work that can be done by any other developer.
+This could be done easily by looking at the anon creds demo and also making calls to the right party that is storing cred defs on the Diem ledger.
+Please send any questions to me at camilop@kiva.org
+
 ### Getting Started 
 
 Requirements:
